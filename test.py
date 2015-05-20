@@ -1,9 +1,6 @@
 from ctypes import *
 rust_lib = cdll.LoadLibrary("target/release/librusty_python.dylib")
 
-# Inspired by
-# https://avacariu.me/articles/calling-rust-from-python.html
-
 
 class Point(Structure):
     _fields_ = [("x", c_double), ("y", c_double)]
