@@ -31,22 +31,22 @@ fn vec_to_slice(mut v: Vec<Point>) -> Slice<Point> {
 
 /// Change a list of passed points inplace
 #[no_mangle]
-pub extern fn move_points_inplace(points: *const uint32_t, length: size_t, new_x: f64, new_y: f64) {
+pub extern fn move_points_inplace(points: *const uint32_t, length: size_t, move_x: f64, move_y: f64) {
     // Map pointer to slice
     let points = unsafe { slice::from_raw_parts_mut(points as *mut Point, length as usize) };
 
     // Iterate over slice
     if points.len() > 0 {
         for p in points {
-            p.x = new_x;
-            p.y = new_y;
+            p.x += move_x;
+            p.y += move_y;
         }
     }
 }
 
 /// Change a list of passed points (working on a copy) and return result
 #[no_mangle]
-pub extern fn move_points(points: *const uint32_t, length: size_t, new_x: f64, new_y: f64) -> Slice<Point> {
+pub extern fn move_points(points: *const uint32_t, length: size_t, move_x: f64, move_y: f64) -> Slice<Point> {
     // Map pointer to slice
     let points = unsafe { slice::from_raw_parts(points as *mut Point, length as usize) };
     
@@ -57,8 +57,8 @@ pub extern fn move_points(points: *const uint32_t, length: size_t, new_x: f64, n
     if points.len() > 0 {
         for p in points {
             let mut p_copy = p.clone();
-            p_copy.x = new_x;
-            p_copy.y = new_y; 
+            p_copy.x += move_x;
+            p_copy.y += move_y; 
             points_copy.push(p_copy);
         }
     }

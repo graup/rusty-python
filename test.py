@@ -9,6 +9,12 @@ class Point(Structure):
         self.x = x
         self.y = y
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return "<Point x=%.4f, y=%.4f>" % (self.x, self.y)
 
@@ -22,43 +28,43 @@ class Slice(Structure):
 
 
 if __name__ == '__main__':
+    # Setup types
+    rust_lib.get_points.restype = Slice
 
-    points = [Point(0, 0), Point(3, 3), Point(4, 4)]
+    # Test returning of list
+    v = rust_lib.get_points()
 
-    print "Initial points ", points
+    points = [v.ptr[i] for i in range(v.len)]
+    print "Returned points: ", points
+    assert points[0] == Point(1.0, 1.0)
+    assert points[1] == Point(2.0, 2.0)
+    assert points[2] == Point(3.0, 3.0)
 
     # Setup types
     PointListType = Point * len(points)
-
-    rust_lib.get_points.restype = Slice
-
     rust_lib.move_points.argtypes = (PointListType, c_size_t, c_double, c_double)
     rust_lib.move_points.restype = Slice
 
     rust_lib.move_points_inplace.argtypes = (PointListType, c_size_t, c_double, c_double)
     rust_lib.move_points_inplace.restype = None
 
-    # Test returning of list
-    v = rust_lib.get_points()
-
-    points = [v.ptr[i] for i in range(v.len)]
-    assert points[0].x == 1.0
-    assert points[1].x == 2.0
-    print "Returned points", points
-
     # Test passing of list and changing inplace
-    c_points = PointListType(*points)
-    rust_lib.move_points_inplace(c_points, len(points), 1.5, 2.5)
+    c_points = PointListType(*points)  # Make a pointer to a copy of the list
+    rust_lib.move_points_inplace(c_points, len(points), 1.0, 2.0)
 
-    points = [c_points[i] for i in range(len(points))]
-    assert points[0].x == 1.5
-    assert points[1].x == 1.5
-    print "Moved points (A) ", points
+    points = [c_points[i] for i in range(len(points))]  # Map pointer back to list
+    print "Moved points (A):", points
+    assert points[0] == Point(2.0, 3.0)
+    assert points[1] == Point(3.0, 4.0)
+    assert points[2] == Point(4.0, 5.0)
 
     # Test passing and returning of list
     v = rust_lib.move_points(c_points, len(points), 5.5, 2.5)
 
-    points = [v.ptr[i] for i in range(v.len)]
-    assert points[0].x == 5.5
-    assert points[1].x == 5.5
-    print "Moved points (B) ", points
+    points = [v.ptr[i] for i in range(v.len)]  # Map pointer back to list
+    print "Moved points (B):", points
+    assert points[0] == Point(7.5, 5.5)
+    assert points[1] == Point(8.5, 6.5)
+    assert points[2] == Point(9.5, 7.5)
+
+    print "All tests passed."
