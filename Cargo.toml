@@ -1,0 +1,11 @@
+[package]
+name = "rusty-python"
+version = "0.1.0"
+authors = ["Paul Grau <paul@graycoding.com>"]
+
+[lib]
+name = "rusty_python"
+crate-type = ["dylib"]
+
+[dependencies]
+libc = "0.1.7"
